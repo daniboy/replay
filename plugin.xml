@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="ca.ubc.cs.cpsc538b.replay.perspectives.ReplayPerspectiveFactory"
+            id="ca.ubc.cs.cpsc538b.replay.perspective"
+            name="Replay">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar ">
+         <toolbar
+               id="ca.ubc.cs.cpsc538b.replay.toolbar.record"
+               label="Record">
+            <command
+                  commandId="ca.ubc.cs.cpsc538b.replay.commands.record"
+                  label="Record"
+                  style="toggle">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="ca.ubc.cs.cpsc538b.replay.commands.RecordHandler"
+            id="ca.ubc.cs.cpsc538b.replay.commands.record"
+            name="Record">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
+   </extension>
+  
+</plugin>
