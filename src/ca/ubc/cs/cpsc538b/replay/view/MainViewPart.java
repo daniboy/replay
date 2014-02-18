@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -32,18 +34,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.Bundle;
 
 import ca.ubc.cs.cpsc538b.replay.Constants;
 
-public class MainViewPart extends ViewPart implements MouseWheelListener, IExecutionListener {
+public class MainViewPart extends ViewPart implements SelectionListener, MouseWheelListener, IExecutionListener {
 
     private static final IOFileFilter FILE_FILTER = FileFilterUtils.and(CanReadFileFilter.CAN_READ,
             new RegexFileFilter("^\\d+\\.png$"));
 
     private Device device;
+    private Scale scale;
     private Composite imageLabelContainer;
     private Label imageLabel;
 
@@ -57,10 +61,14 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
 
     @Override
     public void createPartControl(Composite parent) {
-        GridLayout gridLayout = new GridLayout();
+        GridLayout gridLayout = new GridLayout(2, false);
         parent.setLayout(gridLayout);
 
         device = Display.getCurrent();
+
+        scale = new Scale(parent, SWT.VERTICAL | SWT.NO_FOCUS);
+        scale.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false));
+        scale.addSelectionListener(this);
 
         imageLabelContainer = new Composite(parent, SWT.NO_BACKGROUND);
         imageLabelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -88,11 +96,30 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
     @Override
     public void setFocus() {
         imageLabel.setImage(null);
+        scale.setEnabled(false);
+
+        imageFileIndex = 0;
+        imageFiles.clear();
+    }
+
+    @Override
+    public void widgetSelected(SelectionEvent e) {
+        imageFileIndex = scale.getSelection();
+        replaceImage();
+    }
+
+    @Override
+    public void widgetDefaultSelected(SelectionEvent e) {
     }
 
     @Override
     public void mouseScrolled(MouseEvent e) {
-        replaceImage(e.count);
+        if (e.count > 0) {
+            imageFileIndex = Math.max(0, imageFileIndex - 1);
+        } else if (e.count < 0) {
+            imageFileIndex = Math.min(imageFiles.size() - 1, imageFileIndex + 1);
+        }
+        replaceImage();
     }
 
     @Override
@@ -111,7 +138,12 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
             Collections.sort(imageFiles);
 
             imageFileIndex = imageFiles.size() - 1;
-            replaceImage(0);
+
+            scale.setMinimum(0);
+            scale.setMaximum(imageFileIndex);
+            scale.setEnabled(true);
+
+            replaceImage();
         }
     }
 
@@ -128,15 +160,11 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
         super.dispose();
     }
 
-    private void replaceImage(int dir) {
+    private void replaceImage() {
         safeDisposeImage(currentImage);
 
         if (!imageFiles.isEmpty()) {
-            if (dir > 0) {
-                imageFileIndex = Math.max(0, imageFileIndex - 1);
-            } else if (dir < 0) {
-                imageFileIndex = Math.min(imageFiles.size() - 1, imageFileIndex + 1);
-            }
+            scale.setSelection(imageFileIndex);
 
             Image backendImage = new Image(device, imageFiles.get(imageFileIndex).getAbsolutePath());
 
