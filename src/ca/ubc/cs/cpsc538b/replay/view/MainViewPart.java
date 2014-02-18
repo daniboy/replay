@@ -24,7 +24,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -41,8 +43,9 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
     private static final IOFileFilter FILE_FILTER = FileFilterUtils.and(CanReadFileFilter.CAN_READ,
             new RegexFileFilter("^\\d+\\.png$"));
 
-    private Label label;
     private Device device;
+    private Composite imageLabelContainer;
+    private Label imageLabel;
 
     private ICommandService iCommandService;
 
@@ -54,14 +57,16 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
 
     @Override
     public void createPartControl(Composite parent) {
-        GridLayout layout = new GridLayout();
-        parent.setLayout(layout);
-
-        label = new Label(parent, SWT.NO_BACKGROUND);
-        label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        label.addMouseWheelListener(this);
+        GridLayout gridLayout = new GridLayout();
+        parent.setLayout(gridLayout);
 
         device = Display.getCurrent();
+
+        imageLabelContainer = new Composite(parent, SWT.NO_BACKGROUND);
+        imageLabelContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        imageLabelContainer.addMouseWheelListener(this);
+
+        imageLabel = new Label(imageLabelContainer, SWT.NO_BACKGROUND);
 
         iCommandService = (ICommandService) getSite().getService(ICommandService.class);
         iCommandService.addExecutionListener(this);
@@ -82,7 +87,7 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
 
     @Override
     public void setFocus() {
-        label.setImage(null);
+        imageLabel.setImage(null);
     }
 
     @Override
@@ -133,9 +138,43 @@ public class MainViewPart extends ViewPart implements MouseWheelListener, IExecu
                 imageFileIndex = Math.min(imageFiles.size() - 1, imageFileIndex + 1);
             }
 
-            currentImage = new Image(device, imageFiles.get(imageFileIndex).getAbsolutePath());
-            label.setImage(currentImage);
+            Image backendImage = new Image(device, imageFiles.get(imageFileIndex).getAbsolutePath());
+
+            Rectangle containerBounds = imageLabelContainer.getBounds();
+            Rectangle backendImageBounds = backendImage.getBounds();
+            Rectangle resizedImageBounds = fitImageInContainer(containerBounds, backendImageBounds);
+
+            currentImage = new Image(device, containerBounds.width, containerBounds.height);
+            GC gc = new GC(currentImage);
+            gc.setAntialias(SWT.ON);
+            gc.drawImage(backendImage, 0, 0, backendImageBounds.width, backendImageBounds.height, 0, 0,
+                    resizedImageBounds.width, resizedImageBounds.height);
+            backendImage.dispose();
+
+            imageLabel.setImage(currentImage);
+
+            imageLabel.setSize(resizedImageBounds.width, resizedImageBounds.height);
         }
+    }
+
+    private Rectangle fitImageInContainer(Rectangle containerBounds, Rectangle imageBounds) {
+        Rectangle resizeBounds = new Rectangle(0, 0, 0, 0);
+
+        double containerRatio = (double) containerBounds.width / (double) containerBounds.height;
+        double imageRatio = (double) imageBounds.width / (double) imageBounds.height;
+
+        if (containerRatio > imageRatio) {
+
+            resizeBounds.width = (int) Math.round(imageBounds.width
+                    * ((double) containerBounds.height / (double) imageBounds.height));
+            resizeBounds.height = containerBounds.height;
+        } else {
+            resizeBounds.width = containerBounds.width;
+            resizeBounds.height = (int) Math.round(imageBounds.height
+                    * ((double) containerBounds.width / (double) imageBounds.width));
+        }
+
+        return resizeBounds;
     }
 
     private void safeDisposeImage(Image image) {
