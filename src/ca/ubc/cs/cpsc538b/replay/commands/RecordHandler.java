@@ -18,10 +18,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class RecordHandler extends AbstractHandler {
+import ca.ubc.cs.cpsc538b.replay.Constants;
 
-    private static final int FRAME_DELAY_TIME = 2000;
-    private static final File BASE_DIRECTORY = new File("/home/daniel/Projects/cpsc-538b/screenshots");
+public class RecordHandler extends AbstractHandler {
 
     private Timer recordingTimer;
 
@@ -35,7 +34,7 @@ public class RecordHandler extends AbstractHandler {
             recordingTimer = null;
         } else {
             recordingTimer = new Timer(true);
-            recordingTimer.scheduleAtFixedRate(new RecordingTimerTask(), 0, FRAME_DELAY_TIME);
+            recordingTimer.scheduleAtFixedRate(new RecordingTimerTask(), 0, Constants.FRAME_DELAY_TIME);
         }
 
         return null;
@@ -49,7 +48,8 @@ public class RecordHandler extends AbstractHandler {
                 Robot robot = new Robot();
                 Rectangle captureSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
                 BufferedImage bufferedImage = robot.createScreenCapture(captureSize);
-                ImageIO.write(bufferedImage, "png", new File(BASE_DIRECTORY, System.currentTimeMillis() + ".png"));
+                ImageIO.write(bufferedImage, "png", new File(Constants.BASE_DIRECTORY, System.currentTimeMillis()
+                        + ".png"));
             } catch (AWTException | IOException e) {
                 e.printStackTrace();
             }

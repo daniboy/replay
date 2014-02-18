@@ -24,6 +24,16 @@
             </command>
          </toolbar>
       </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:ca.ubc.cs.cpsc538b.replay.view.main">
+         <command
+               commandId="ca.ubc.cs.cpsc538b.replay.commands.refresh"
+               icon="res/refresh.gif"
+               label="Refresh"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -36,6 +46,25 @@
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
+      <command
+            defaultHandler="ca.ubc.cs.cpsc538b.replay.commands.VoidHandler"
+            id="ca.ubc.cs.cpsc538b.replay.commands.refresh"
+            name="Refresh">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="ca.ubc.cs.cpsc538b.replay.category"
+            name="Replay">
+      </category>
+      <view
+            category="ca.ubc.cs.cpsc538b.replay.category"
+            class="ca.ubc.cs.cpsc538b.replay.view.MainViewPart"
+            id="ca.ubc.cs.cpsc538b.replay.view.main"
+            name="Replay"
+            restorable="true">
+      </view>
    </extension>
   
 </plugin>
