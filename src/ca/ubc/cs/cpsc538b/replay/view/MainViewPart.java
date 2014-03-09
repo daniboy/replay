@@ -160,6 +160,12 @@ public class MainViewPart extends ViewPart implements SelectionListener, MouseWh
         super.dispose();
     }
 
+    public boolean showNextFrame() {
+        imageFileIndex = Math.min(imageFiles.size() - 1, imageFileIndex + 1);
+        replaceImage();
+        return imageFileIndex != imageFiles.size() - 1;
+    }
+
     private void replaceImage() {
         safeDisposeImage(currentImage);
 

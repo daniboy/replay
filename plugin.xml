@@ -33,6 +33,12 @@
                label="Refresh"
                style="push">
          </command>
+         <command
+               commandId="ca.ubc.cs.cpsc538b.replay.commands.play"
+               icon="res/resume_co.gif"
+               label="Auto Play"
+               style="toggle">
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -50,6 +56,15 @@
             defaultHandler="ca.ubc.cs.cpsc538b.replay.commands.VoidHandler"
             id="ca.ubc.cs.cpsc538b.replay.commands.refresh"
             name="Refresh">
+      </command>
+      <command
+            defaultHandler="ca.ubc.cs.cpsc538b.replay.commands.AutoPlayHandler"
+            id="ca.ubc.cs.cpsc538b.replay.commands.play"
+            name="Auto Play">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
       </command>
    </extension>
    <extension
