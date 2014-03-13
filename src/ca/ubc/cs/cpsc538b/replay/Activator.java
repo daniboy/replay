@@ -72,20 +72,17 @@ public class Activator extends AbstractUIPlugin implements IPerspectiveListener 
 
     @Override
     public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-        // When switching to the Replay perspective, stop the recording
-        if (perspective.getId().equals("ca.ubc.cs.cpsc538b.replay.perspective")) {
-            Command recordingCommand = commandService.getCommand("ca.ubc.cs.cpsc538b.replay.commands.record");
-            State state = recordingCommand.getState("org.eclipse.ui.commands.toggleState");
-            boolean isRecording = (boolean) state.getValue();
+        // Stop/start recording when switching to/from the Replay perspective
+        Command recordingCommand = commandService.getCommand("ca.ubc.cs.cpsc538b.replay.commands.record");
+        State state = recordingCommand.getState("org.eclipse.ui.commands.toggleState");
+        boolean isRecording = (boolean) state.getValue();
 
-            if (isRecording) {
-                try {
-                    handlerService.executeCommand(recordingCommand.getId(), null);
-                } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
-                    e.printStackTrace();
-                }
+        if (perspective.getId().equals("ca.ubc.cs.cpsc538b.replay.perspective") == isRecording) {
+            try {
+                handlerService.executeCommand(recordingCommand.getId(), null);
+            } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+                e.printStackTrace();
             }
         }
     }
-
 }
